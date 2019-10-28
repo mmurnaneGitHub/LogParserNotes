@@ -1,0 +1,47 @@
+Download: https://www.microsoft.com/en-us/download/details.aspx?id=24659
+Start: Search for Log Parser in Start (C:\Program Files (x86)\Log Parser 2.2)
+WSITD03 LOGS: \\wsitd03\c$\inetpub\logs\LogFiles\W3SVC1 
+WSITD01 LOGS: \\wsitd01\c$\inetpub\logs\LogFiles\W3SVC1  (W3SVC2 for tMap)
+
+Examples for writing to CSV: https://gist.github.com/dejanstojanovic/30c757f0b093a9e24314e82a8abe98d2
+
+List the size of log files along with Date and time created:
+LogParser -i:FS "Select Name,Size,CreationTime FROM \\wsitd03\c$\inetpub\logs\LogFiles\W3SVC1\*.* ORDER BY Size DESC" -o:DataGrid
+
+Number of requests made to each page:
+LogParser -i:IISW3C "SELECT cs-uri-stem, Count(*) AS Hits FROM \\wsitd03\c$\inetpub\logs\LogFiles\W3SVC1\u_ex191021.log GROUP BY cs-uri-stem ORDER BY Hits DESC" -o:Datagrid
+
+**Number of requests made to each page for All Log Files on WSITD01 (W3SVC1):
+LogParser -i:IISW3C "SELECT cs-uri-stem, Count(*) AS Hits FROM \\wsitd01\c$\inetpub\logs\LogFiles\W3SVC1\u_ex*.log GROUP BY cs-uri-stem ORDER BY Hits DESC" -o:Datagrid
+LogParser -i:IISW3C "SELECT cs-uri-stem, Count(*) AS Hits FROM \\wsitd01\c$\inetpub\logs\LogFiles\W3SVC1\u_ex*.log GROUP BY cs-uri-stem ORDER BY Hits DESC" -o:CSV >> \\Geobase-win\CED\GADS\R2019\R041\Users\logs\TopPagesWSITD01.csv
+
+Top 25 URLs:
+LogParser "SELECT TOP 25 cs-uri-stem as Url, COUNT(*) As Hits FROM \\wsitd01\c$\inetpub\logs\LogFiles\W3SVC1\u_ex*.log GROUP BY cs-uri-stem ORDER By Hits DESC" -o:DataGrid
+
+Find the Slowest 50 URLs (in average) in the site (videos):
+LogParser "SELECT TOP 50 cs-uri-stem as URL, MAX(time-taken) As Max, MIN(time-taken) As Min, Avg(time-taken) As Average FROM \\wsitd01\c$\inetpub\logs\LogFiles\W3SVC1\u_ex*.log GROUP BY URL ORDER By Average DESC" -o:DataGrid
+
+
+Number of requests made by each client ip:
+LogParser "SELECT c-ip, count(*) as Hits FROM \\wsitd03\c$\inetpub\logs\LogFiles\W3SVC1\u_ex191021.log GROUP BY c-ip ORDER BY Hits DESC" -o:DataGrid
+
+List the c-ip and corresponding client names along with the number of requests from those clients:
+LogParser "SELECT c-ip,REVERSEDNS(c-ip), count(*) AS Hits FROM \\wsitd03\c$\inetpub\logs\LogFiles\W3SVC1\u_ex191021.log GROUP BY c-ip ORDER By Count(*) DESC" -o:DataGrid
+LogParser "SELECT cs-username,c-ip,REVERSEDNS(c-ip), count(*) AS Hits FROM \\wsitd03\c$\inetpub\logs\LogFiles\W3SVC1\u_ex191021.log GROUP BY cs-username,c-ip ORDER By Count(*) DESC" -o:DataGrid
+LogParser "SELECT cs-username,c-ip,REVERSEDNS(c-ip), count(*) AS Hits FROM \\wsitd03\c$\inetpub\logs\LogFiles\W3SVC1\u_ex191021.log GROUP BY cs-username,c-ip ORDER By Count(*) DESC" -o:CSV >> \\Geobase-win\CED\GADS\R2019\R041\Users\logs\users191021.csv
+
+Top 25 Users on WSITD03:
+LogParser "SELECT TOP 25 cs-username,c-ip,REVERSEDNS(c-ip), count(*) AS Hits FROM \\wsitd03\c$\inetpub\logs\LogFiles\W3SVC1\u_ex*.log WHERE cs-username Is Not Null GROUP BY cs-username,c-ip ORDER By Count(*) DESC" -o:DataGrid
+
+All Users with IPs on WSITD03:
+LogParser "SELECT cs-username,c-ip,REVERSEDNS(c-ip), count(*) AS Hits FROM \\wsitd03\c$\inetpub\logs\LogFiles\W3SVC1\u_ex*.log WHERE cs-username Is Not Null GROUP BY cs-username,c-ip ORDER By Count(*) DESC" -o:DataGrid
+LogParser "SELECT cs-username,c-ip,REVERSEDNS(c-ip), count(*) AS Hits FROM \\wsitd03\c$\inetpub\logs\LogFiles\W3SVC1\u_ex*.log WHERE cs-username Is Not Null GROUP BY cs-username,c-ip ORDER By Count(*) DESC" -o:CSV >> \\Geobase-win\CED\GADS\R2019\R041\Users\logs\AllUsers.csv
+
+**All Unique Users on WSITD03:
+LogParser "SELECT cs-username, count(*) AS Hits FROM \\wsitd03\c$\inetpub\logs\LogFiles\W3SVC1\u_ex*.log WHERE cs-username Is Not Null GROUP BY cs-username ORDER By Count(*) DESC" -o:CSV >> \\Geobase-win\CED\GADS\R2019\R041\Users\logs\AllUniqueUsers.csv
+
+Multiple Log Files:
+LogParser "SELECT cs-username,c-ip,REVERSEDNS(c-ip), count(*) AS Hits FROM \\Geobase-win\CED\GADS\R2019\R041\Users\logs\u_ex*.log GROUP BY cs-username,c-ip ORDER By Count(*) DESC" -o:CSV >> \\Geobase-win\CED\GADS\R2019\R041\Users\logs\users191015_22.csv
+
+
+
